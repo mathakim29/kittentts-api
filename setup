@@ -1,0 +1,28 @@
+#!/bin/bash
+
+case "$1" in
+
+  build)
+    # Build the image
+    docker build -t kitten-tts -f dockerfile .
+    ;;
+
+    
+  run)
+    # Run the container
+    docker run -it --rm \
+      --name kitten-tts \
+      -p 8000:8000 \
+      -v $(pwd)/store/hf-cache:/root/.cache/huggingface \
+      -v $(pwd)/src:/app \
+      -v $(pwd)/run:/app/run \
+      --gpus all \
+      kitten-tts ./run
+    ;;
+  *)
+
+
+    echo "Usage: $0 {build|run}"
+    exit 1
+    ;;
+esac
