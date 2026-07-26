@@ -1,1 +1,5 @@
-dump.rdb
+*
+!getenv.py
+!main.py
+!tasks.py
+!utils.py
