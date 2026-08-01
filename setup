@@ -1,28 +1,35 @@
-#!/bin/bash
+#!/usr/bin/env python3
+import argparse
+import os
+import subprocess
+import sys
 
-case "$1" in
+def main():
+    parser = argparse.ArgumentParser(description="Manage kitten-tts Docker container")
+    parser.add_argument("action", choices=["build", "run"], help="Action to perform")
+    parser.add_argument("--port", "-p", type=int, default=8000, help="Port to expose (default: 8000)")
+    args = parser.parse_args()
 
-  build)
-    # Build the image
-    docker build -t kitten-tts -f dockerfile .
-    ;;
+    pwd = os.getcwd()
 
-    
-  run)
-    # Run the container
-    docker run -it --rm \
-      --name kitten-tts \
-      -p 8000:8000 \
-      -v $(pwd)/store/hf-cache:/root/.cache/huggingface \
-      -v $(pwd)/src:/app \
-      -v $(pwd)/run:/app/run \
-      --gpus all \
-      kitten-tts ./run
-    ;;
-  *)
+    if args.action == "build":
+        cmd = ["docker", "build", "-t", "kitten-tts", "-f", "dockerfile", "."]
+    elif args.action == "run":
+        cmd = [
+            "docker", "run", "-it", "--rm",
+            "--name", "kitten-tts",
+            "-p", f"{args.port}:8000",
+            "-v", "/tmp/kitten-tts/models:/root/.cache/huggingface",
+            "-v", f"{pwd}/src:/app",
+            "--gpus", "all",
+            "kitten-tts",
+            "bash", "run"
+        ]
 
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as e:
+        sys.exit(e.returncode)
 
-    echo "Usage: $0 {build|run}"
-    exit 1
-    ;;
-esac
+if __name__ == "__main__":
+    main()
